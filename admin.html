@@ -1,0 +1,2193 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>لوحة تحكم العيادة | إدارة الطابور والمواعيد</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #F5F5F7;
+      --bg-secondary: #FFFFFF;
+      --bg-tertiary: #EFEFF4;
+      --text-primary: #1D1D1F;
+      --text-secondary: #6E6E73;
+      --text-muted: #86868B;
+      --accent-dark: #1D1D1F;
+      --accent-blue: #0071E3;
+      --accent-blue-hover: #0077ED;
+      --accent-blue-soft: rgba(0, 113, 227, 0.08);
+      --border-soft: rgba(0, 0, 0, 0.08);
+      --glass-bg: rgba(255, 255, 255, 0.82);
+      --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.12);
+      --success: #28CD41;
+      --success-bg: #E8F9EC;
+      --warning: #FF9500;
+      --warning-bg: #FFF5E5;
+      --danger: #FF3B30;
+      --danger-bg: #FFECEB;
+      --whatsapp: #25D366;
+      --radius-sm: 14px;
+      --radius-md: 20px;
+      --radius-lg: 24px;
+      --radius-pill: 980px;
+      --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", 'Tajawal', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding-bottom: 50px;
+    }
+
+    /* Apple Glass Login Screen (Firebase Auth) */
+    .auth-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 5000;
+      background: radial-gradient(circle at top, #FFFFFF 0%, #F5F5F7 65%, #E5E5EA 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 430px;
+      background: rgba(255, 255, 255, 0.86);
+      backdrop-filter: saturate(180%) blur(25px);
+      -webkit-backdrop-filter: saturate(180%) blur(25px);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      padding: 38px 32px;
+      box-shadow: var(--shadow-lg);
+      text-align: center;
+    }
+
+    .auth-logo-circle {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      background: var(--accent-dark);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.7rem;
+      font-weight: 900;
+      margin: 0 auto 18px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .auth-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+
+    .auth-subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 26px;
+    }
+
+    .auth-error {
+      background: var(--danger-bg);
+      color: var(--danger);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.84rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    /* Main Admin Wrapper (Hidden until Authenticated) */
+    .admin-app {
+      display: none;
+    }
+
+    /* Sticky Glass Header */
+    .admin-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: var(--glass-bg);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .header-container {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      background: var(--accent-dark);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.15rem;
+    }
+
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      display: block;
+      line-height: 1.2;
+    }
+
+    .brand-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* Segmented Tabs Navigation */
+    .tabs-bar {
+      display: flex;
+      background: var(--bg-tertiary);
+      padding: 4px;
+      border-radius: var(--radius-pill);
+      gap: 4px;
+      overflow-x: auto;
+      max-width: 100%;
+    }
+
+    .tab-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      padding: 8px 18px;
+      border-radius: var(--radius-pill);
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tab-btn.active {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tab-counter {
+      background: var(--accent-blue);
+      color: #FFFFFF;
+      font-size: 0.72rem;
+      padding: 1px 7px;
+      border-radius: var(--radius-pill);
+    }
+
+    /* Main Container */
+    .main-container {
+      max-width: 1320px;
+      margin: 24px auto 0;
+      padding: 0 24px;
+    }
+
+    /* Live Queue Caller Control Panel (Top Hero Bar for Secretary) */
+    .caller-control-board {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      padding: 26px 28px;
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow-md);
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: 1.1fr 1.4fr 1fr;
+      gap: 22px;
+      align-items: center;
+    }
+
+    .caller-number-box {
+      background: var(--bg-primary);
+      border-radius: var(--radius-md);
+      padding: 18px 22px;
+      border: 1px solid var(--border-soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .caller-num-display {
+      font-size: 3.2rem;
+      font-weight: 900;
+      color: var(--accent-blue);
+      line-height: 1;
+      letter-spacing: -1px;
+    }
+
+    .caller-main-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn-call-next {
+      background: var(--accent-blue);
+      color: #FFFFFF;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 16px 24px;
+      font-size: 1.12rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 8px 20px rgba(0, 113, 227, 0.24);
+    }
+
+    .btn-call-next:hover {
+      background: var(--accent-blue-hover);
+      transform: translateY(-2px);
+    }
+
+    .caller-sub-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .status-switcher-box {
+      background: var(--bg-primary);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      border: 1px solid var(--border-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .status-Quick-btns {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .status-chip-btn {
+      padding: 8px 6px;
+      border-radius: 10px;
+      border: 1px solid var(--border-soft);
+      background: var(--bg-secondary);
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+    }
+
+    .status-chip-btn.active-open {
+      background: var(--success-bg);
+      color: #158527;
+      border-color: var(--success);
+    }
+
+    .status-chip-btn.active-busy {
+      background: var(--warning-bg);
+      color: #B26200;
+      border-color: var(--warning);
+    }
+
+    .status-chip-btn.active-closed {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+
+    /* Statistics Cards Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 26px;
+    }
+
+    .stat-card {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      padding: 20px 22px;
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-label {
+      font-size: 0.86rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    .stat-hint {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    /* Tab Sections */
+    .tab-section {
+      display: none;
+    }
+
+    .tab-section.active {
+      display: block;
+    }
+
+    /* Panel Cards & Forms */
+    .panel-card {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      padding: 26px;
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .panel-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+      text-align: right;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.86rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text-primary);
+    }
+
+    .form-input, .form-textarea, .form-select {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      background: var(--bg-primary);
+      font-size: 0.94rem;
+      color: var(--text-primary);
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .form-textarea {
+      min-height: 95px;
+      resize: vertical;
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      background: #FFFFFF;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.14);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: var(--radius-pill);
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+
+    .btn-dark { background: var(--accent-dark); color: #FFFFFF; }
+    .btn-dark:hover { background: #333336; }
+
+    .btn-blue { background: var(--accent-blue); color: #FFFFFF; }
+    .btn-blue:hover { background: var(--accent-blue-hover); }
+
+    .btn-success { background: var(--success); color: #FFFFFF; }
+    .btn-warning { background: var(--warning-bg); color: #B26200; }
+    .btn-danger { background: var(--danger-bg); color: var(--danger); }
+    .btn-danger:hover { background: var(--danger); color: #FFFFFF; }
+
+    .btn-whatsapp { background: var(--whatsapp); color: #FFFFFF; }
+    .btn-whatsapp:hover { opacity: 0.92; }
+
+    .btn-subtle { background: var(--bg-tertiary); color: var(--text-primary); }
+    .btn-subtle:hover { background: #E2E2E9; }
+
+    /* Filter & Search Bar */
+    .filter-toolbar {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr auto;
+      gap: 12px;
+      background: var(--bg-primary);
+      padding: 14px;
+      border-radius: var(--radius-md);
+      margin-bottom: 20px;
+      border: 1px solid var(--border-soft);
+      align-items: center;
+    }
+
+    /* Queue Patients List */
+    .queue-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .queue-patient-card {
+      background: var(--bg-primary);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      border: 1px solid var(--border-soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      transition: var(--transition);
+    }
+
+    .queue-patient-card.current-inside {
+      background: #F0F6FF;
+      border-color: var(--accent-blue);
+      box-shadow: 0 4px 18px rgba(0, 113, 227, 0.1);
+    }
+
+    .patient-left-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .queue-num-badge {
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      background: var(--accent-dark);
+      color: #FFFFFF;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .queue-patient-card.current-inside .queue-num-badge {
+      background: var(--accent-blue);
+    }
+
+    .patient-meta-tags {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .tag-pill {
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .tag-online { background: var(--accent-blue-soft); color: var(--accent-blue); }
+    .tag-walkin { background: #EFEFF4; color: var(--text-primary); }
+    .tag-waiting { background: var(--warning-bg); color: #B26200; }
+    .tag-attended { background: var(--success-bg); color: #158527; }
+    .tag-absent { background: var(--danger-bg); color: var(--danger); }
+
+    .patient-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Days Management Grid */
+    .admin-days-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 18px;
+    }
+
+    .admin-day-card {
+      background: var(--bg-primary);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      border: 1px solid var(--border-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .spots-adjust-bar {
+      background: var(--bg-secondary);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .round-step-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      border: none;
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .round-step-btn:hover {
+      background: var(--accent-dark);
+      color: #FFFFFF;
+    }
+
+    /* Direct Image Uploader */
+    .upload-zone {
+      border: 2px dashed rgba(0, 0, 0, 0.15);
+      background: var(--bg-primary);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .upload-zone:hover {
+      border-color: var(--accent-blue);
+      background: #F0F6FF;
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .previews-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .preview-item {
+      position: relative;
+      width: 92px;
+      height: 70px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border-soft);
+      background: var(--bg-tertiary);
+    }
+
+    .preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .preview-remove {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(255, 59, 48, 0.92);
+      color: #FFFFFF;
+      border: none;
+      font-size: 0.74rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Chats Inbox Layout */
+    .chats-layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 20px;
+      min-height: 540px;
+    }
+
+    .chats-sidebar {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-soft);
+      overflow-y: auto;
+      max-height: 600px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .chat-thread-item {
+      padding: 14px;
+      border-radius: var(--radius-md);
+      background: var(--bg-primary);
+      cursor: pointer;
+      transition: var(--transition);
+      border: 1px solid transparent;
+    }
+
+    .chat-thread-item.active {
+      background: #EBF4FF;
+      border-color: var(--accent-blue);
+    }
+
+    .chat-main-box {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-soft);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      max-height: 600px;
+    }
+
+    .chat-box-header {
+      padding: 16px 20px;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chat-box-messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #FAFAFC;
+    }
+
+    .msg-bubble {
+      max-width: 78%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .msg-from-patient {
+      background: #E9E9EB;
+      color: var(--text-primary);
+      align-self: flex-start;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg-from-admin {
+      background: var(--accent-blue);
+      color: #FFFFFF;
+      align-self: flex-end;
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-box-footer {
+      padding: 14px 18px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-soft);
+    }
+
+    @media (max-width: 960px) {
+      .caller-control-board {
+        grid-template-columns: 1fr;
+      }
+      .filter-toolbar {
+        grid-template-columns: 1fr;
+      }
+      .chats-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. FIREBASE AUTHENTICATION LOGIN SCREEN -->
+  <div id="authScreen" class="auth-screen">
+    <div class="auth-card">
+      <div class="auth-logo-circle">🩺</div>
+      <h1 class="auth-title">دخول إدارة العيادة</h1>
+      <p class="auth-subtitle">أدخل البريد الإلكتروني وكلمة المرور الخاصة بالطبيب أو السكرتيرة</p>
+
+      <div id="authErrorBox" class="auth-error">البريد الإلكتروني أو كلمة المرور غير صحيحة</div>
+
+      <form onsubmit="handleAdminLogin(event)">
+        <div class="form-group">
+          <label class="form-label">البريد الإلكتروني</label>
+          <input type="email" id="loginEmail" class="form-input" placeholder="admin@clinic.com" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">كلمة المرور</label>
+          <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required />
+        </div>
+        <button type="submit" id="loginSubmitBtn" class="btn btn-dark" style="width:100%; padding:14px; font-size:1rem; margin-top:8px;">
+          تسجيل الدخول للوحة التحكم
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. PROTECTED ADMIN DASHBOARD -->
+  <div id="adminApp" class="admin-app">
+    <header class="admin-header">
+      <div class="header-container">
+        <div class="header-brand">
+          <div class="brand-badge">ع</div>
+          <div>
+            <span class="brand-title" id="headerClinicName">إدارة العيادة الطبية</span>
+            <span class="brand-sub">تنظيم الطابور المباشر وحجوزات المرضى</span>
+          </div>
+        </div>
+
+        <div class="tabs-bar">
+          <button class="tab-btn active" onclick="switchTab('queueTab', this)">
+            <span>👥 الطابور والمرضى</span>
+            <span id="waitingBadgeCount" class="tab-counter">0</span>
+          </button>
+          <button class="tab-btn" onclick="switchTab('daysTab', this)">
+            <span>📅 أيام الحجز والحصص</span>
+          </button>
+          <button class="tab-btn" onclick="switchTab('chatsTab', this)">
+            <span>💬 رسائل المرضى</span>
+            <span id="activeChatsBadgeCount" class="tab-counter">0</span>
+          </button>
+          <button class="tab-btn" onclick="switchTab('settingsTab', this)">
+            <span>⚙️ إعدادات العيادة</span>
+          </button>
+        </div>
+
+        <button class="btn btn-subtle" onclick="handleAdminLogout()" style="font-size:0.84rem; padding:8px 16px;">
+          تسجيل الخروج ↗
+        </button>
+      </div>
+    </header>
+
+    <main class="main-container">
+      <!-- Top Live Queue Caller Bar -->
+      <section class="caller-control-board">
+        <div class="caller-number-box">
+          <div>
+            <span style="font-size:0.84rem; color:var(--text-secondary); font-weight:700; display:block;">الرقم الحالي داخل الفحص</span>
+            <span style="font-size:0.76rem; color:var(--text-muted);">يظهر مباشرة في هواتف المرضى</span>
+          </div>
+          <div id="adminLiveServingNumber" class="caller-num-display">0</div>
+        </div>
+
+        <div class="caller-main-actions">
+          <button class="btn-call-next" onclick="callNextPatient()">
+            <span>🔔 النداء على المريض التالي (+1)</span>
+          </button>
+          <div class="caller-sub-actions">
+            <button class="btn btn-subtle" style="flex:1;" onclick="changeServingNumberBy(-1)">− الرقم السابق</button>
+            <button class="btn btn-subtle" style="flex:1;" onclick="promptCustomServingNumber()">تحديد رقم يدوياً</button>
+            <button class="btn btn-danger" onclick="resetServingNumberZero()">تصفير (0)</button>
+          </div>
+        </div>
+
+        <div class="status-switcher-box">
+          <span style="font-size:0.82rem; font-weight:700; color:var(--text-secondary);">حالة العيادة المباشرة في الموقع:</span>
+          <div class="status-Quick-btns">
+            <button id="statusBtnOpen" class="status-chip-btn" onclick="setQuickClinicStatus('open')">🟢 متواجد</button>
+            <button id="statusBtnBusy" class="status-chip-btn" onclick="setQuickClinicStatus('busy')">🟡 طارئ/تأخير</button>
+            <button id="statusBtnClosed" class="status-chip-btn" onclick="setQuickClinicStatus('closed')">🔴 مغلقة</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4 Quick Statistics Cards -->
+      <section class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-label">المريض الحالي في الفحص</span>
+          <span class="stat-value" id="statCurrentServing" style="color:var(--accent-blue);">#0</span>
+          <span class="stat-hint">معروض على الشاشة الحية</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">مرضى بانتظار الدخول</span>
+          <span class="stat-value" id="statWaitingPatients" style="color:var(--warning);">0</span>
+          <span class="stat-hint">في قائمة الانتظار الفعالة</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">تم فحصهم اليوم</span>
+          <span class="stat-value" id="statAttendedPatients" style="color:var(--success);">0</span>
+          <span class="stat-hint">تم تأكيد حضورهم ودخولهم</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">إجمالي الأماكن الشاغرة المتبقية</span>
+          <span class="stat-value" id="statRemainingSpots">0</span>
+          <span class="stat-hint">متاحة للحجز عبر الموقع</span>
+        </div>
+      </section>
+
+      <!-- TAB 1: QUEUE & WALK-IN PATIENT MANAGEMENT -->
+      <section id="queueTab" class="tab-section active">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">طلبات التسجيل الإلكتروني بانتظار الموافقة</h2>
+              <p style="font-size:0.88rem; color:var(--text-muted);">
+                لن يدخل أي طلب إلكتروني الطابور أو يخصم مكاناً إلا بعد الموافقة عليه.
+              </p>
+            </div>
+            <span id="pendingBookingCount" class="tab-counter">0</span>
+          </div>
+          <div id="pendingBookingsContainer" class="queue-list"></div>
+        </div>
+
+        <!-- Walk-in Quick Registration Card (For Secretary) -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">➕ تسجيل مريض حضوري سريع (Walk-in)</h2>
+              <p style="font-size:0.88rem; color:var(--text-muted);">
+                خاص بالمرضى الذين يحضرون للعيادة مباشرة بدون حجز إلكتروني؛ يأخذ المريض الرقم التالي في الطابور وينقص العدد المتاح في الموقع تلقائياً.
+              </p>
+            </div>
+          </div>
+
+          <form id="walkInForm" onsubmit="addWalkInPatient(event)">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">اختر اليوم / الفترة</label>
+                <select id="walkInDaySelect" class="form-select" required></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">اسم المريض الكامل</label>
+                <input type="text" id="walkInName" class="form-input" placeholder="اكتب اسم المريض الحضوري" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">رقم الهاتف (اختياري لكبار السن)</label>
+                <input type="tel" id="walkInPhone" class="form-input" placeholder="اختياري: 0550000000" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">نوع الزيارة</label>
+                <select id="walkInVisitType" class="form-select">
+                  <option value="فحص جديد (كشف عام)">فحص جديد (كشف عام)</option>
+                  <option value="مراجعة (كونترول)">مراجعة (كونترول)</option>
+                  <option value="قراءة تحاليل أو أشعة">قراءة تحاليل أو أشعة</option>
+                  <option value="حالة استعجالية">حالة استعجالية</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" id="walkInSubmitBtn" class="btn btn-dark" style="padding:12px 26px;">
+              + إضافة المريض للطابور وخصم مكان
+            </button>
+          </form>
+        </div>
+
+        <!-- Queue List & Search Filter -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">قائمة طابور المرضى</h2>
+              <p style="font-size:0.88rem; color:var(--text-muted);">مرتبة حسب رقم الطابور؛ يمكنك البحث بالاسم أو الهاتف أو تصفية يوم محدد.</p>
+            </div>
+          </div>
+
+          <div class="filter-toolbar">
+            <input type="text" id="queueSearchInput" class="form-input" placeholder="🔍 ابحث باسم المريض، رقم الهاتف، أو رقم الطابور..." oninput="renderPatientsQueueList()" />
+            <select id="queueFilterDaySelect" class="form-select" onchange="renderPatientsQueueList()">
+              <option value="ALL">عرض جميع الأيام</option>
+            </select>
+            <select id="queueFilterStatusSelect" class="form-select" onchange="renderPatientsQueueList()">
+              <option value="ALL">كل الحالات</option>
+              <option value="waiting">بانتظار الدخول فقط</option>
+              <option value="attended">تم الفحص فقط</option>
+              <option value="absent">غائب / متجاوز</option>
+            </select>
+          </div>
+
+          <div id="patientsQueueContainer" class="queue-list"></div>
+        </div>
+      </section>
+
+      <!-- TAB 2: CLINIC DAYS & QUOTA MANAGEMENT -->
+      <section id="daysTab" class="tab-section">
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2 class="panel-title" id="dayFormTitle">إضافة يوم عمل أو فترة حجز جديدة</h2>
+            <button id="cancelEditDayBtn" class="btn btn-subtle" style="display:none;" onclick="resetDayForm()">إلغاء التعديل</button>
+          </div>
+
+          <form id="dayForm" onsubmit="saveClinicDay(event)">
+            <input type="hidden" id="editDayId" value="" />
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">اسم اليوم (مثال: يوم الأحد)</label>
+                <input type="text" id="dayNameInput" class="form-input" placeholder="مثال: يوم الأحد" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">التاريخ أو الوصف (مثال: 25 أكتوبر)</label>
+                <input type="text" id="dayDateTextInput" class="form-input" placeholder="مثال: 25 أكتوبر" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">الفترة / التوقيت</label>
+                <input type="text" id="dayShiftInput" class="form-input" placeholder="مثال: الفترة الصباحية (08:30 - 13:00)" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">عدد المرضى المسموح (الأماكن المتاحة)</label>
+                <input type="number" id="daySpotsInput" class="form-input" min="0" max="500" value="20" required />
+              </div>
+            </div>
+            <button type="submit" id="saveDayBtn" class="btn btn-blue" style="padding:12px 28px;">
+              حفظ اليوم في جدول الحجوزات
+            </button>
+          </form>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">أيام الحجز المضافة والتحكم الفوري بالحصة</h2>
+              <p style="font-size:0.88rem; color:var(--text-muted);">يمكنك زيادة أو إنقاص الأماكن المتاحة أو إيقاف الحجز فوراً في حالات الطوارئ.</p>
+            </div>
+          </div>
+          <div id="adminDaysGrid" class="admin-days-grid"></div>
+        </div>
+      </section>
+
+      <!-- TAB 3: PATIENT CHATS INBOX (10 Messages Limit + WhatsApp) -->
+      <section id="chatsTab" class="tab-section">
+        <div class="chats-layout">
+          <div class="chats-sidebar" id="chatsSidebarList"></div>
+          <div class="chat-main-box" id="chatActiveBox">
+            <div style="margin:auto; text-align:center; color:var(--text-muted); padding:24px;">
+              <h3>اختر محادثة مريض من القائمة للرد عليه</h3>
+              <p style="font-size:0.86rem; margin-top:6px;">متاح 10 رسائل لكل طرف، مع زر للانتقال المباشر إلى واتساب المريض</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: GENERAL CLINIC SETTINGS -->
+      <section id="settingsTab" class="tab-section">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">الإعدادات العامة للعيادة</h2>
+              <p style="font-size:0.88rem; color:var(--text-muted);">تظهر جميع هذه المعلومات والصور مباشرة في الموقع الأساسي للمرضى</p>
+            </div>
+          </div>
+
+          <form id="clinicSettingsForm" onsubmit="saveClinicSettings(event)">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">اسم العيادة أو اسم الطبيب</label>
+                <input type="text" id="setClinicName" class="form-input" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">التخصص الطبي الدقيق</label>
+                <input type="text" id="setSpecialty" class="form-input" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">سعر الفحص / الكشف</label>
+                <input type="text" id="setFee" class="form-input" placeholder="مثال: 2000 د.ج" required />
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">رقم واتساب العيادة (يظهر كزر مباشر للمرضى)</label>
+                <input type="tel" id="setWhatsappPhone" class="form-input" placeholder="مثال: 0550000000" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">رمز الدولة للواتساب (مثال: 213 للجزائر)</label>
+                <input type="text" id="setCountryCode" class="form-input" placeholder="213" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">أوقات العمل الرسمية</label>
+                <input type="text" id="setWorkingHours" class="form-input" placeholder="08:30 ص - 17:00 م" required />
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">عنوان شريط الطابور الحي</label>
+                <input type="text" id="setQueueLabel" class="form-input" placeholder="طابور اليوم المباشر" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">رابط موقع العيادة على Google Maps</label>
+                <input type="url" id="setMapUrl" class="form-input" placeholder="https://maps.google.com/..." required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">نبذة تعريفية عن العيادة (تظهر في الواجهة الرئيسية)</label>
+              <textarea id="setDescription" class="form-textarea" required></textarea>
+            </div>
+
+            <!-- Direct Logo Upload -->
+            <div class="form-group">
+              <label class="form-label">شعار العيادة (يرفع مباشرة من جهازك)</label>
+              <div class="upload-zone" style="padding:14px;">
+                <input type="file" accept="image/*" onchange="handleClinicLogoUpload(event)" />
+                <span>اضغط لاختيار صورة شعار العيادة من الهاتف أو الحاسوب</span>
+              </div>
+              <div id="logoPreviewContainer" class="previews-grid"></div>
+            </div>
+
+            <!-- Direct Clinic Images Upload -->
+            <div class="form-group">
+              <label class="form-label">صور العيادة والتجهيزات الطبية (تُسحب بالإصبع في موقع المريض)</label>
+              <div class="upload-zone">
+                <input type="file" accept="image/*" multiple onchange="handleClinicPhotosUpload(event)" />
+                <strong>📷 اضغط لرفع صور العيادة من جهازك (حتى 5 صور)</strong>
+              </div>
+              <div id="clinicPhotosPreviewContainer" class="previews-grid"></div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">الفحوصات والخدمات الطبية المتوفرة (كل خدمة في سطر)</label>
+                <textarea id="setServicesText" class="form-textarea" style="min-height:130px;"></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">شروط وتعليمات الحضور والطابور (كل شرط في سطر)</label>
+                <textarea id="setRulesText" class="form-textarea" style="min-height:130px;"></textarea>
+              </div>
+            </div>
+
+            <button type="submit" id="saveSettingsBtn" class="btn btn-blue" style="padding:14px 32px; font-size:1rem;">
+              حفظ جميع إعدادات العيادة
+            </button>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Firebase Modular SDK (Firestore + Auth) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      collection,
+      addDoc,
+      updateDoc,
+      deleteDoc,
+      onSnapshot,
+      runTransaction
+    } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMq-96o2M6QdE5VoVyOuBroGgPdaOIp_U",
+      authDomain: "tabibi-8fd7d.firebaseapp.com",
+      projectId: "tabibi-8fd7d",
+      storageBucket: "tabibi-8fd7d.firebasestorage.app",
+      messagingSenderId: "288651582661",
+      appId: "1:288651582661:web:85096d00db7ab6958764ac",
+      measurementId: "G-P5MBZQT8TY"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let clinicSettings = {
+      clinicName: "عيادة النخبة الطبية",
+      doctorSpecialty: "طب وجراحة عامة ومتابعة الحالات المزمنة",
+      description: "احجز رقمك في الطابور من هاتفك وتابع وصول دورك مباشرة بدون عناء الانتظار الطويل في قاعة العيادة.",
+      clinicStatus: "open",
+      currentServingNumber: 1,
+      activeQueueLabel: "طابور اليوم المباشر",
+      workingHours: "08:30 ص - 17:00 م",
+      consultationFee: "2000 د.ج",
+      whatsappPhone: "0550000000",
+      countryCode: "213",
+      mapUrl: "https://maps.google.com",
+      logoData: "",
+      clinicImages: [],
+      services: [
+        "فحص طبي شامل",
+        "متابعة الأمراض المزمنة",
+        "قراءة التحاليل والأشعة",
+        "تخطيط القلب (ECG)",
+        "فحص بالسونار (إيكوغرافيا)",
+        "استشارات طبية دقيقة"
+      ],
+      rules: [
+        "يرجى الحضور للعيادة عندما يقترب رقمك بـ 3 أرقام على الأقل.",
+        "إحضار الدفتر الصحي والتحاليل أو الأشعة السابقة إن وجدت.",
+        "المريض الذي يتأخر عن النداء على رقمه ينتظر دخول المريض الذي يليه.",
+        "الحالات الاستعجالية القصوى لها أولوية الدخول بتقدير الطبيب."
+      ]
+    };
+
+    let allDays = [];
+    let allDaysMap = {};
+    let allBookings = [];
+    let allChats = [];
+    let selectedChatId = null;
+    let tempLogoData = "";
+    let tempClinicImages = [];
+    let listenersInitialized = false;
+
+    // 1. Firebase Auth Guard
+    onAuthStateChanged(auth, (user) => {
+      const authScreen = document.getElementById("authScreen");
+      const adminApp = document.getElementById("adminApp");
+      if (user) {
+        authScreen.style.display = "none";
+        adminApp.style.display = "block";
+        if (!listenersInitialized) {
+          listenersInitialized = true;
+          initRealtimeDashboard();
+        }
+      } else {
+        authScreen.style.display = "flex";
+        adminApp.style.display = "none";
+      }
+    });
+
+    window.handleAdminLogin = async function(e) {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value.trim();
+      const pass = document.getElementById("loginPassword").value;
+      const errBox = document.getElementById("authErrorBox");
+      const btn = document.getElementById("loginSubmitBtn");
+
+      errBox.style.display = "none";
+      btn.disabled = true;
+      btn.textContent = "جاري التحقق...";
+
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+      } catch (err) {
+        errBox.style.display = "block";
+        errBox.textContent = "بيانات الدخول غير صحيحة، تأكد من البريد وكلمة المرور في Firebase Auth.";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "تسجيل الدخول للوحة التحكم";
+      }
+    };
+
+    window.handleAdminLogout = async function() {
+      await signOut(auth);
+    };
+
+    // Tab Navigation
+    window.switchTab = function(tabId, btnEl) {
+      document.querySelectorAll(".tab-section").forEach((s) => s.classList.remove("active"));
+      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+      document.getElementById(tabId).classList.add("active");
+      btnEl.classList.add("active");
+    };
+
+    // Format Phone for WhatsApp
+    function formatWhatsAppPhone(rawPhone) {
+      let cleaned = String(rawPhone || "").replace(/\D/g, "");
+      const code = String(clinicSettings.countryCode || "213").replace(/\D/g, "");
+      if (cleaned.startsWith("00")) {
+        cleaned = cleaned.substring(2);
+      } else if (cleaned.startsWith("0")) {
+        cleaned = code + cleaned.substring(1);
+      } else if (cleaned && !cleaned.startsWith(code) && cleaned.length <= 10) {
+        cleaned = code + cleaned;
+      }
+      return cleaned;
+    }
+
+    // Image Compressor (Device Upload -> Lightweight Base64)
+    function compressImageFile(file, maxWidth = 900, quality = 0.68) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL("image/jpeg", quality));
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // 2. Initialize Real-time Listeners
+    function initRealtimeDashboard() {
+      // Settings Listener
+      onSnapshot(doc(db, "clinicSettings", "info"), (snap) => {
+        if (snap.exists()) {
+          clinicSettings = { ...clinicSettings, ...snap.data() };
+        }
+        renderHeaderAndQueueCaller();
+        populateClinicSettingsForm();
+      });
+
+      // Days Listener
+      onSnapshot(collection(db, "clinicDays"), (snap) => {
+        allDays = [];
+        allDaysMap = {};
+        let totalRemSpots = 0;
+
+        snap.forEach((d) => {
+          const data = { id: d.id, ...d.data() };
+          allDays.push(data);
+          allDaysMap[d.id] = data;
+          if (data.isOpen !== false) {
+            totalRemSpots += Math.max(0, Number(data.availableSpots || 0));
+          }
+        });
+
+        allDays.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+        document.getElementById("statRemainingSpots").textContent = totalRemSpots;
+        populateDaySelectors();
+        renderAdminDaysCards();
+      });
+
+      // Bookings / Queue Listener
+      onSnapshot(collection(db, "clinicBookings"), (snap) => {
+        allBookings = [];
+        let waitingCount = 0;
+        let attendedCount = 0;
+        let pendingCount = 0;
+
+        snap.forEach((d) => {
+          const b = { id: d.id, ...d.data() };
+          if (b.status === "waiting") waitingCount++;
+          if (b.status === "attended") attendedCount++;
+          if (b.status === "pending-approval") pendingCount++;
+          allBookings.push(b);
+        });
+
+        // Sort by Queue Number ascending
+        allBookings.sort((a, b) => Number(a.queueNumber || 0) - Number(b.queueNumber || 0));
+
+        document.getElementById("statWaitingPatients").textContent = waitingCount;
+        document.getElementById("waitingBadgeCount").textContent = waitingCount;
+        document.getElementById("statAttendedPatients").textContent = attendedCount;
+        renderPatientsQueueList();
+        document.getElementById("pendingBookingCount").textContent = pendingCount;
+        renderPendingBookings();
+      });
+
+      // Chats Listener
+      onSnapshot(collection(db, "clinicChats"), (snap) => {
+        allChats = [];
+        let activeCount = 0;
+
+        snap.forEach((d) => {
+          const c = { id: d.id, ...d.data() };
+          if (c.status !== "closed" && Number(c.adminMsgCount || 0) < 10) {
+            activeCount++;
+          }
+          allChats.push(c);
+        });
+
+        allChats.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+        document.getElementById("activeChatsBadgeCount").textContent = activeCount;
+        renderChatsSidebar();
+        if (selectedChatId) {
+          renderActiveChatBox();
+        }
+      });
+    }
+
+    // 3. Live Queue Caller Controls
+    function renderHeaderAndQueueCaller() {
+      const servingNum = Number(clinicSettings.currentServingNumber || 0);
+      document.getElementById("headerClinicName").textContent = `إدارة ${clinicSettings.clinicName}`;
+      document.getElementById("adminLiveServingNumber").textContent = servingNum;
+      document.getElementById("statCurrentServing").textContent = `#${servingNum}`;
+
+      // Highlight active status button
+      const st = clinicSettings.clinicStatus || "open";
+      document.getElementById("statusBtnOpen").className = `status-chip-btn ${st === "open" ? "active-open" : ""}`;
+      document.getElementById("statusBtnBusy").className = `status-chip-btn ${st === "busy" ? "active-busy" : ""}`;
+      document.getElementById("statusBtnClosed").className = `status-chip-btn ${st === "closed" ? "active-closed" : ""}`;
+
+      renderPatientsQueueList();
+    }
+
+    window.callNextPatient = async function() {
+      const nextNum = Number(clinicSettings.currentServingNumber || 0) + 1;
+      await updateServingNumberInDb(nextNum);
+    };
+
+    window.changeServingNumberBy = async function(delta) {
+      const nextNum = Math.max(0, Number(clinicSettings.currentServingNumber || 0) + delta);
+      await updateServingNumberInDb(nextNum);
+    };
+
+    window.promptCustomServingNumber = async function() {
+      const input = prompt("أدخل رقم الطابور الذي تريد عرضه الآن على الشاشة:", clinicSettings.currentServingNumber || 1);
+      if (input === null) return;
+      const num = Math.max(0, parseInt(input) || 0);
+      await updateServingNumberInDb(num);
+    };
+
+    window.resetServingNumberZero = async function() {
+      if (!confirm("هل تريد تصفير عداد الرقم الحالي إلى 0؟")) return;
+      await updateServingNumberInDb(0);
+    };
+
+    async function updateServingNumberInDb(num) {
+      try {
+        await setDoc(doc(db, "clinicSettings", "info"), {
+          currentServingNumber: num,
+          updatedAt: Date.now()
+        }, { merge: true });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    window.setQuickClinicStatus = async function(statusVal) {
+      try {
+        await setDoc(doc(db, "clinicSettings", "info"), {
+          clinicStatus: statusVal,
+          updatedAt: Date.now()
+        }, { merge: true });
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    // 4. Walk-in Patient Registration (By Secretary) + Queue List & Search
+    function populateDaySelectors() {
+      const walkInSelect = document.getElementById("walkInDaySelect");
+      const filterSelect = document.getElementById("queueFilterDaySelect");
+      const currentFilterVal = filterSelect.value || "ALL";
+
+      walkInSelect.innerHTML = "";
+      filterSelect.innerHTML = `<option value="ALL">عرض جميع الأيام (${allBookings.length})</option>`;
+
+      if (allDays.length === 0) {
+        walkInSelect.innerHTML = `<option value="">أضف يوم عمل أولاً من تبويب الأيام</option>`;
+        return;
+      }
+
+      allDays.forEach((d) => {
+        const label = `${d.dayName} ${d.dateText ? `(${d.dateText})` : ""} — متبقي ${d.availableSpots} مكان`;
+        const opt1 = document.createElement("option");
+        opt1.value = d.id;
+        opt1.textContent = label;
+        walkInSelect.appendChild(opt1);
+
+        const opt2 = document.createElement("option");
+        opt2.value = d.id;
+        opt2.textContent = `${d.dayName} ${d.dateText || ""}`;
+        filterSelect.appendChild(opt2);
+      });
+
+      if ([...filterSelect.options].some((o) => o.value === currentFilterVal)) {
+        filterSelect.value = currentFilterVal;
+      }
+    }
+
+    window.addWalkInPatient = async function(e) {
+      e.preventDefault();
+      const dayId = document.getElementById("walkInDaySelect").value;
+      if (!dayId) {
+        alert("يرجى إضافة يوم عمل أولاً من تبويب (أيام الحجز والحصص).");
+        return;
+      }
+
+      const patientName = document.getElementById("walkInName").value.trim();
+      const patientPhone = document.getElementById("walkInPhone").value.trim();
+      const visitType = document.getElementById("walkInVisitType").value;
+      const btn = document.getElementById("walkInSubmitBtn");
+
+      btn.disabled = true;
+      btn.textContent = "جاري التسجيل وتخصيص الرقم...";
+
+      const dayRef = doc(db, "clinicDays", dayId);
+
+      try {
+        let assignedNum = 1;
+        let dayLabel = "";
+        let shiftLabel = "";
+
+        await runTransaction(db, async (transaction) => {
+          const dayDoc = await transaction.get(dayRef);
+          if (!dayDoc.exists()) throw new Error("اليوم المحدد غير موجود.");
+          const data = dayDoc.data();
+          assignedNum = Number(data.lastQueueNumber || 0) + 1;
+          const nextSpots = Math.max(0, Number(data.availableSpots || 0) - 1);
+          dayLabel = `${data.dayName} ${data.dateText || ""}`.trim();
+          shiftLabel = data.shiftTime || "";
+
+          transaction.update(dayRef, {
+            lastQueueNumber: assignedNum,
+            availableSpots: nextSpots
+          });
+        });
+
+        await addDoc(collection(db, "clinicBookings"), {
+          dayId,
+          dayName: dayLabel,
+          shiftTime: shiftLabel,
+          queueNumber: assignedNum,
+          patientName,
+          patientPhone: patientPhone || "حضوري (بدون هاتف)",
+          visitType,
+          source: "walk-in",
+          status: "waiting",
+          createdAt: Date.now()
+        });
+
+        document.getElementById("walkInName").value = "";
+        document.getElementById("walkInPhone").value = "";
+        alert(`تم تسجيل المريض (${patientName}) بنجاح! رقمه في الطابور هو: #${assignedNum}`);
+      } catch (err) {
+        console.error(err);
+        alert("حدث خطأ أثناء تسجيل المريض الحضوري.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "+ إضافة المريض للطابور وخصم مكان";
+      }
+    };
+
+    window.renderPatientsQueueList = function() {
+      const container = document.getElementById("patientsQueueContainer");
+      const searchQ = (document.getElementById("queueSearchInput")?.value || "").trim().toLowerCase();
+      const dayFilter = document.getElementById("queueFilterDaySelect")?.value || "ALL";
+      const statusFilter = document.getElementById("queueFilterStatusSelect")?.value || "ALL";
+      const currentServing = Number(clinicSettings.currentServingNumber || 0);
+
+      const filtered = allBookings.filter((b) => {
+        if (b.status === "pending-approval" || b.status === "cancelled") return false;
+        if (dayFilter !== "ALL" && b.dayId !== dayFilter) return false;
+        if (statusFilter !== "ALL" && b.status !== statusFilter) return false;
+        if (searchQ) {
+          const matchName = String(b.patientName || "").toLowerCase().includes(searchQ);
+          const matchPhone = String(b.patientPhone || "").toLowerCase().includes(searchQ);
+          const matchNum = String(b.queueNumber || "") === searchQ.replace("#", "");
+          if (!matchName && !matchPhone && !matchNum) return false;
+        }
+        return true;
+      });
+
+      container.innerHTML = "";
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding:28px;">لا توجد حجوزات مطابقة للبحث أو الفلتر المحدد.</p>`;
+        return;
+      }
+
+      filtered.forEach((b) => {
+        const isCurrent = Number(b.queueNumber) === currentServing && b.status !== "absent";
+        const isWalkIn = b.source === "walk-in";
+
+        const statusBadgeMap = {
+          waiting: { text: "بانتظار الدخول", cls: "tag-waiting" },
+          attended: { text: "✓ تم الفحص", cls: "tag-attended" },
+          absent: { text: "✕ غائب / متجاوز", cls: "tag-absent" }
+        };
+        const stObj = statusBadgeMap[b.status] || statusBadgeMap.waiting;
+
+        const hasValidPhone = /\d{6,}/.test(String(b.patientPhone || ""));
+        const waPhone = hasValidPhone ? formatWhatsAppPhone(b.patientPhone) : "";
+        const waMsg = encodeURIComponent(
+          `مرحباً ${b.patientName}، نذكركم بموعدكم في ${clinicSettings.clinicName}.\n` +
+          `- رقمكم في الطابور: #${b.queueNumber}\n` +
+          `- الرقم الحالي في الفحص الآن: #${currentServing}\n` +
+          `يرجى التوجه للعيادة لاقتراب دوركم.`
+        );
+
+        const card = document.createElement("div");
+        card.className = `queue-patient-card ${isCurrent ? "current-inside" : ""}`;
+        card.innerHTML = `
+          <div class="patient-left-info">
+            <div class="queue-num-badge">#${b.queueNumber}</div>
+            <div>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <strong style="font-size:1.08rem;">${escapeHtml(b.patientName)}</strong>
+                <span class="tag-pill ${stObj.cls}">${stObj.text}</span>
+                <span class="tag-pill ${isWalkIn ? "tag-walkin" : "tag-online"}">
+                  ${isWalkIn ? "🏢 حضوري بالعيادة" : "📱 حجز عبر الموقع"}
+                </span>
+              </div>
+              <div class="patient-meta-tags" style="font-size:0.86rem; color:var(--text-secondary);">
+                <span>📅 ${escapeHtml(b.dayName || "")}</span>
+                <span>•</span>
+                <span>🩺 ${escapeHtml(b.visitType || "فحص عام")}</span>
+                <span>•</span>
+                <span>📞 ${escapeHtml(b.patientPhone || "بدون هاتف")}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="patient-actions">
+            <button class="btn btn-blue" onclick="callSpecificPatient('${b.id}', ${b.queueNumber})">
+              🔔 نداء وإدخال الآن
+            </button>
+            ${b.status !== "attended" ? `
+              <button class="btn btn-success" onclick="updatePatientStatus('${b.id}', 'attended')">✓ حضر</button>
+            ` : ""}
+            ${b.status !== "absent" ? `
+              <button class="btn btn-warning" onclick="updatePatientStatus('${b.id}', 'absent')">تجاوز (غائب)</button>
+            ` : ""}
+            ${hasValidPhone ? `
+              <a href="https://wa.me/${waPhone}?text=${waMsg}" target="_blank" rel="noopener" class="btn btn-whatsapp">
+                💬 تذكير واتساب
+              </a>
+            ` : ""}
+            <button class="btn btn-danger" onclick="deletePatientFromQueue('${b.id}', '${b.dayId}', '${escapeHtml(b.patientName)}')">
+              🗑️ حذف
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    };
+
+    function renderPendingBookings() {
+      const container = document.getElementById("pendingBookingsContainer");
+      const pendingBookings = allBookings.filter((booking) => booking.status === "pending-approval");
+      container.innerHTML = "";
+
+      if (pendingBookings.length === 0) {
+        container.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding:20px;">لا توجد طلبات تسجيل جديدة بانتظار الموافقة.</p>`;
+        return;
+      }
+
+      pendingBookings.forEach((booking) => {
+        const waPhone = formatWhatsAppPhone(booking.patientPhone);
+        const waMessage = encodeURIComponent(
+          `السلام عليكم ${booking.patientName}، معك إدارة ${clinicSettings.clinicName}. وصلنا طلب تسجيلك ليوم ${booking.dayName} لنوع زيارة: ${booking.visitType}. يرجى الرد على هذه الرسالة بكلمة "تأكيد" لتأكيد طلبك.`
+        );
+        const card = document.createElement("div");
+        card.className = "queue-patient-card";
+        card.innerHTML = `
+          <div class="patient-left-info">
+            <div class="queue-num-badge" style="font-size:1.4rem;">…</div>
+            <div>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <strong style="font-size:1.08rem;">${escapeHtml(booking.patientName)}</strong>
+                <span class="tag-pill tag-waiting">بانتظار الموافقة</span>
+              </div>
+              <div class="patient-meta-tags" style="font-size:0.86rem; color:var(--text-secondary);">
+                <span>📅 ${escapeHtml(booking.dayName || "")}</span>
+                <span>•</span>
+                <span>🩺 ${escapeHtml(booking.visitType || "فحص عام")}</span>
+                <span>•</span>
+                <span>📞 ${escapeHtml(booking.patientPhone || "")}</span>
+              </div>
+            </div>
+          </div>
+          <div class="patient-actions">
+            ${waPhone ? `
+              <a href="https://wa.me/${waPhone}?text=${waMessage}" target="_blank" rel="noopener" class="btn btn-whatsapp">
+                💬 مراسلة واتساب لتأكيد الطلب
+              </a>
+            ` : ""}
+            <button class="btn btn-success" onclick="approveOnlineBooking('${booking.id}')">✓ قبول وإدخاله للطابور</button>
+            <button class="btn btn-danger" onclick="rejectOnlineBooking('${booking.id}')">رفض وحذف الطلب</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    window.approveOnlineBooking = async function(bookingId) {
+      const bookingRef = doc(db, "clinicBookings", bookingId);
+      try {
+        await runTransaction(db, async (transaction) => {
+          const bookingDoc = await transaction.get(bookingRef);
+          if (!bookingDoc.exists()) throw new Error("لم يعد طلب التسجيل موجوداً.");
+
+          const booking = bookingDoc.data();
+          if (booking.status !== "pending-approval") {
+            throw new Error("تمت معالجة هذا الطلب مسبقاً.");
+          }
+
+          const dayRef = doc(db, "clinicDays", booking.dayId);
+          const dayDoc = await transaction.get(dayRef);
+          if (!dayDoc.exists()) throw new Error("يوم الحجز لم يعد موجوداً.");
+
+          const day = dayDoc.data();
+          const availableSpots = Number(day.availableSpots || 0);
+          if (day.isOpen === false || availableSpots <= 0) {
+            throw new Error("لا توجد أماكن متاحة لهذا اليوم. لم تتم الموافقة على الطلب.");
+          }
+
+          const queueNumber = Number(day.lastQueueNumber || 0) + 1;
+          transaction.update(dayRef, {
+            availableSpots: availableSpots - 1,
+            lastQueueNumber: queueNumber
+          });
+          transaction.update(bookingRef, {
+            status: "waiting",
+            queueNumber,
+            approvedAt: Date.now()
+          });
+        });
+        alert("تمت الموافقة وإضافة المريض إلى الطابور.");
+      } catch (err) {
+        console.error("Unable to approve online booking:", err);
+        alert(err.message || "تعذرت الموافقة على طلب التسجيل.");
+      }
+    };
+
+    window.rejectOnlineBooking = async function(bookingId) {
+      if (!confirm("هل تريد رفض طلب التسجيل وحذفه نهائياً؟")) return;
+      try {
+        const bookingRef = doc(db, "clinicBookings", bookingId);
+        await runTransaction(db, async (transaction) => {
+          const bookingDoc = await transaction.get(bookingRef);
+          if (!bookingDoc.exists() || bookingDoc.data().status !== "pending-approval") {
+            throw new Error("لم يعد الطلب بانتظار الموافقة.");
+          }
+          transaction.delete(bookingRef);
+        });
+      } catch (err) {
+        console.error("Unable to reject online booking:", err);
+        alert(err.message || "تعذر رفض طلب التسجيل.");
+      }
+    };
+
+    window.callSpecificPatient = async function(bookingId, queueNum) {
+      await updateServingNumberInDb(Number(queueNum));
+      await updateDoc(doc(db, "clinicBookings", bookingId), { status: "attended" });
+    };
+
+    window.updatePatientStatus = async function(bookingId, newStatus) {
+      await updateDoc(doc(db, "clinicBookings", bookingId), { status: newStatus });
+    };
+
+    window.deletePatientFromQueue = async function(bookingId, dayId, patientName) {
+      if (!confirm(`هل أنت متأكد من حذف المريض (${patientName}) من الطابور؟`)) return;
+      const restoreSpot = confirm("هل تريد إعادة هذا المكان شاغراً (+1) ليتمكن مريض آخر من حجزه في الموقع؟\n(اضغط موافق لإعادة المكان، أو إلغاء للحذف فقط)");
+
+      try {
+        const booking = allBookings.find((item) => item.id === bookingId);
+        if (booking && booking.source === "online") {
+          const bookingRef = doc(db, "clinicBookings", bookingId);
+          await runTransaction(db, async (transaction) => {
+            const bookingDoc = await transaction.get(bookingRef);
+            if (!bookingDoc.exists()) throw new Error("لم يعد المريض موجوداً في الطابور.");
+
+            let dayDoc = null;
+            let dayRef = null;
+            if (restoreSpot && dayId) {
+              dayRef = doc(db, "clinicDays", dayId);
+              dayDoc = await transaction.get(dayRef);
+            }
+
+            if (dayDoc && dayDoc.exists()) {
+              const currentSpots = Number(dayDoc.data().availableSpots || 0);
+              transaction.update(dayRef, { availableSpots: currentSpots + 1 });
+            }
+            transaction.update(bookingRef, { status: "cancelled", cancelledAt: Date.now() });
+          });
+          return;
+        }
+
+        if (restoreSpot && dayId && allDaysMap[dayId]) {
+          const dayRef = doc(db, "clinicDays", dayId);
+          const currentSpots = Number(allDaysMap[dayId].availableSpots || 0);
+          await updateDoc(dayRef, { availableSpots: currentSpots + 1 });
+        }
+        await deleteDoc(doc(db, "clinicBookings", bookingId));
+      } catch (err) {
+        console.error(err);
+        alert(err.message || "تعذر حذف المريض من الطابور.");
+      }
+    };
+
+    // 5. Clinic Days & Quota Management
+    window.saveClinicDay = async function(e) {
+      e.preventDefault();
+      const editId = document.getElementById("editDayId").value;
+      const dayData = {
+        dayName: document.getElementById("dayNameInput").value.trim(),
+        dateText: document.getElementById("dayDateTextInput").value.trim(),
+        shiftTime: document.getElementById("dayShiftInput").value.trim(),
+        availableSpots: Math.max(0, parseInt(document.getElementById("daySpotsInput").value) || 0),
+        updatedAt: Date.now()
+      };
+
+      try {
+        if (editId) {
+          await updateDoc(doc(db, "clinicDays", editId), dayData);
+        } else {
+          dayData.lastQueueNumber = 0;
+          dayData.isOpen = true;
+          dayData.createdAt = Date.now();
+          await addDoc(collection(db, "clinicDays"), dayData);
+        }
+        resetDayForm();
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    window.resetDayForm = function() {
+      document.getElementById("dayForm").reset();
+      document.getElementById("editDayId").value = "";
+      document.getElementById("dayFormTitle").textContent = "إضافة يوم عمل أو فترة حجز جديدة";
+      document.getElementById("cancelEditDayBtn").style.display = "none";
+    };
+
+    window.editClinicDay = function(dayId) {
+      const d = allDaysMap[dayId];
+      if (!d) return;
+      document.getElementById("editDayId").value = dayId;
+      document.getElementById("dayNameInput").value = d.dayName || "";
+      document.getElementById("dayDateTextInput").value = d.dateText || "";
+      document.getElementById("dayShiftInput").value = d.shiftTime || "";
+      document.getElementById("daySpotsInput").value = d.availableSpots ?? 20;
+      document.getElementById("dayFormTitle").textContent = `تعديل اليوم: ${d.dayName}`;
+      document.getElementById("cancelEditDayBtn").style.display = "inline-flex";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    window.adjustDaySpots = async function(dayId, delta) {
+      const d = allDaysMap[dayId];
+      if (!d) return;
+      const nextSpots = Math.max(0, Number(d.availableSpots || 0) + delta);
+      await updateDoc(doc(db, "clinicDays", dayId), { availableSpots: nextSpots });
+    };
+
+    window.toggleDayOpenState = async function(dayId) {
+      const d = allDaysMap[dayId];
+      if (!d) return;
+      const nextState = d.isOpen === false ? true : false;
+      await updateDoc(doc(db, "clinicDays", dayId), { isOpen: nextState });
+    };
+
+    window.resetDayQueueCounter = async function(dayId) {
+      if (!confirm("هل تريد تصفير عداد أرقام الطابور لهذا اليوم ليبدأ من الرقم #1 مجدداً؟")) return;
+      await updateDoc(doc(db, "clinicDays", dayId), { lastQueueNumber: 0 });
+    };
+
+    window.deleteClinicDay = async function(dayId) {
+      if (!confirm("هل أنت متأكد من حذف هذا اليوم نهائياً؟")) return;
+      await deleteDoc(doc(db, "clinicDays", dayId));
+    };
+
+    function renderAdminDaysCards() {
+      const container = document.getElementById("adminDaysGrid");
+      container.innerHTML = "";
+
+      if (allDays.length === 0) {
+        container.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:24px;">لم تقم بإضافة أيام حجز بعد. استخدم النموذج أعلاه لإضافة أيام عمل العيادة.</p>`;
+        return;
+      }
+
+      allDays.forEach((d) => {
+        const spots = Number(d.availableSpots || 0);
+        const lastNum = Number(d.lastQueueNumber || 0);
+        const isOpen = d.isOpen !== false;
+
+        const card = document.createElement("div");
+        card.className = "admin-day-card";
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+            <div>
+              <strong style="font-size:1.12rem;">${escapeHtml(d.dayName)} ${escapeHtml(d.dateText || "")}</strong>
+              <span style="display:block; font-size:0.82rem; color:var(--text-muted);">${escapeHtml(d.shiftTime || "")}</span>
+            </div>
+            <span class="tag-pill ${isOpen && spots > 0 ? "tag-attended" : "tag-absent"}">
+              ${!isOpen ? "مغلق طارئاً" : spots === 0 ? "مكتمل (0)" : "متاح للحجز"}
+            </span>
+          </div>
+
+          <div class="spots-adjust-bar">
+            <span style="font-size:0.88rem; font-weight:700;">الأماكن المتبقية: <strong>${spots}</strong></span>
+            <div style="display:flex; gap:6px;">
+              <button class="round-step-btn" onclick="adjustDaySpots('${d.id}', -1)">−</button>
+              <button class="round-step-btn" onclick="adjustDaySpots('${d.id}', 1)">+</button>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.84rem; color:var(--text-secondary);">
+            <span>آخر رقم طابور وصل إليه: <strong>#${lastNum}</strong></span>
+            <button class="btn btn-subtle" style="padding:4px 10px; font-size:0.76rem;" onclick="resetDayQueueCounter('${d.id}')">
+              تصفير العداد
+            </button>
+          </div>
+
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:auto;">
+            <button class="btn ${isOpen ? "btn-warning" : "btn-success"}" style="flex:1;" onclick="toggleDayOpenState('${d.id}')">
+              ${isOpen ? "⏸️ إيقاف الحجز فوراً" : "▶️ فتح الحجز"}
+            </button>
+            <button class="btn btn-subtle" onclick="editClinicDay('${d.id}')">تعديل</button>
+            <button class="btn btn-danger" onclick="deleteClinicDay('${d.id}')">🗑️</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // 6. Patient Restricted Chats Inbox (10 Messages + Direct WhatsApp)
+    function renderChatsSidebar() {
+      const sidebar = document.getElementById("chatsSidebarList");
+      sidebar.innerHTML = "";
+
+      if (allChats.length === 0) {
+        sidebar.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding:24px;">لا توجد رسائل من المرضى بعد</p>`;
+        return;
+      }
+
+      allChats.forEach((c) => {
+        const pLeft = Math.max(0, 10 - Number(c.patientMsgCount || 0));
+        const aLeft = Math.max(0, 10 - Number(c.adminMsgCount || 0));
+        const lastMsg = (c.messages && c.messages.length) ? c.messages[c.messages.length - 1].text : "محادثة جديدة";
+
+        const item = document.createElement("div");
+        item.className = `chat-thread-item ${c.id === selectedChatId ? "active" : ""}`;
+        item.onclick = () => {
+          selectedChatId = c.id;
+          renderChatsSidebar();
+          renderActiveChatBox();
+        };
+
+        item.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <strong>${escapeHtml(c.patientName)}</strong>
+            <span style="font-size:0.75rem; color:var(--text-muted);">${escapeHtml(c.patientPhone)}</span>
+          </div>
+          <div style="font-size:0.84rem; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:6px;">
+            ${escapeHtml(lastMsg)}
+          </div>
+          <div style="font-size:0.74rem; color:var(--accent-blue); font-weight:700;">
+            للمريض: ${pLeft}/10 • للسكرتيرة: ${aLeft}/10
+          </div>
+        `;
+        sidebar.appendChild(item);
+      });
+    }
+
+    function renderActiveChatBox() {
+      const box = document.getElementById("chatActiveBox");
+      const chat = allChats.find((x) => x.id === selectedChatId);
+      if (!chat) {
+        box.innerHTML = `<div style="margin:auto; text-align:center; color:var(--text-muted); padding:24px;">اختر محادثة من القائمة</div>`;
+        return;
+      }
+
+      const pUsed = Number(chat.patientMsgCount || 0);
+      const aUsed = Number(chat.adminMsgCount || 0);
+      const pLeft = Math.max(0, 10 - pUsed);
+      const aLeft = Math.max(0, 10 - aUsed);
+      const isClosed = chat.status === "closed" || aUsed >= 10;
+
+      const waPhone = formatWhatsAppPhone(chat.patientPhone);
+      const waText = encodeURIComponent(`مرحباً ${chat.patientName}، معك سكرتارية ${clinicSettings.clinicName} بخصوص استفسارك على موقعنا.`);
+
+      const msgsHtml = (chat.messages || []).map((m) => `
+        <div class="msg-bubble ${m.sender === "patient" ? "msg-from-patient" : "msg-from-admin"}">
+          <div>${escapeHtml(m.text)}</div>
+          <small style="opacity:0.75; font-size:0.7rem; display:block; margin-top:4px;">
+            ${m.sender === "patient" ? escapeHtml(chat.patientName) : "السكرتيرة"}
+          </small>
+        </div>
+      `).join("");
+
+      box.innerHTML = `
+        <div class="chat-box-header">
+          <div>
+            <strong style="font-size:1.05rem;">${escapeHtml(chat.patientName)} (${escapeHtml(chat.patientPhone)})</strong>
+            <div style="font-size:0.78rem; color:var(--text-secondary);">
+              متبقي للمريض: <strong>${pLeft}/10</strong> | متبقي للسكرتيرة: <strong>${aLeft}/10</strong>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <a href="https://wa.me/${waPhone}?text=${waText}" target="_blank" rel="noopener" class="btn btn-whatsapp">
+              💬 الانتقال إلى واتساب المريض
+            </a>
+            <button class="btn btn-danger" onclick="deleteClinicChat('${chat.id}')">حذف المحادثة</button>
+          </div>
+        </div>
+
+        <div class="chat-box-messages" id="adminChatScroll">
+          ${msgsHtml || `<p style="margin:auto; color:var(--text-muted);">لا توجد رسائل بعد</p>`}
+        </div>
+
+        <div class="chat-box-footer">
+          ${isClosed ? `
+            <div style="background:var(--danger-bg); color:var(--danger); padding:10px; border-radius:10px; text-align:center; font-weight:700; font-size:0.86rem;">
+              انتهى الحد المسموح للرسائل (10 رسائل). اضغط على زر "الانتقال إلى واتساب المريض" بالأعلى لإكمال المحادثة.
+            </div>
+          ` : `
+            <form onsubmit="sendAdminClinicReply(event, '${chat.id}')" style="display:flex; gap:10px;">
+              <input type="text" id="adminChatReplyInput" class="form-input" placeholder="اكتب ردك هنا (متبقي لك ${aLeft} رسائل)..." required maxlength="240" />
+              <button type="submit" class="btn btn-blue" style="padding:0 24px;">إرسال</button>
+            </form>
+          `}
+        </div>
+      `;
+
+      const scroller = document.getElementById("adminChatScroll");
+      if (scroller) scroller.scrollTop = scroller.scrollHeight;
+    }
+
+    window.sendAdminClinicReply = async function(e, chatId) {
+      e.preventDefault();
+      const chat = allChats.find((x) => x.id === chatId);
+      if (!chat) return;
+
+      const aUsed = Number(chat.adminMsgCount || 0);
+      if (aUsed >= 10 || chat.status === "closed") return;
+
+      const inp = document.getElementById("adminChatReplyInput");
+      const text = inp.value.trim();
+      if (!text) return;
+      inp.value = "";
+
+      const nextACount = aUsed + 1;
+      const pUsed = Number(chat.patientMsgCount || 0);
+      const nextStatus = (nextACount >= 10 && pUsed >= 10) ? "closed" : (chat.status || "active");
+
+      const updatedMessages = [
+        ...(chat.messages || []),
+        { sender: "admin", text, timestamp: Date.now() }
+      ];
+
+      await updateDoc(doc(db, "clinicChats", chatId), {
+        messages: updatedMessages,
+        adminMsgCount: nextACount,
+        status: nextStatus,
+        updatedAt: Date.now()
+      });
+    };
+
+    window.deleteClinicChat = async function(chatId) {
+      if (!confirm("هل تريد حذف هذه المحادثة نهائياً؟")) return;
+      selectedChatId = null;
+      await deleteDoc(doc(db, "clinicChats", chatId));
+    };
+
+    // 7. Clinic Settings Form & Media Upload
+    function populateClinicSettingsForm() {
+      document.getElementById("setClinicName").value = clinicSettings.clinicName || "";
+      document.getElementById("setSpecialty").value = clinicSettings.doctorSpecialty || "";
+      document.getElementById("setFee").value = clinicSettings.consultationFee || "";
+      document.getElementById("setWhatsappPhone").value = clinicSettings.whatsappPhone || "";
+      document.getElementById("setCountryCode").value = clinicSettings.countryCode || "213";
+      document.getElementById("setWorkingHours").value = clinicSettings.workingHours || "";
+      document.getElementById("setQueueLabel").value = clinicSettings.activeQueueLabel || "";
+      document.getElementById("setMapUrl").value = clinicSettings.mapUrl || "";
+      document.getElementById("setDescription").value = clinicSettings.description || "";
+      document.getElementById("setServicesText").value = (clinicSettings.services || []).join("\n");
+      document.getElementById("setRulesText").value = (clinicSettings.rules || []).join("\n");
+
+      tempLogoData = clinicSettings.logoData || "";
+      tempClinicImages = Array.isArray(clinicSettings.clinicImages) ? [...clinicSettings.clinicImages] : [];
+      renderSettingsMediaPreviews();
+    }
+
+    window.handleClinicLogoUpload = async function(e) {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      tempLogoData = await compressImageFile(file, 300, 0.78);
+      e.target.value = "";
+      renderSettingsMediaPreviews();
+    };
+
+    window.handleClinicPhotosUpload = async function(e) {
+      const files = Array.from(e.target.files || []);
+      for (const file of files) {
+        if (tempClinicImages.length >= 5) {
+          alert("الحد الأقصى لصور العيادة هو 5 صور.");
+          break;
+        }
+        const compressed = await compressImageFile(file, 950, 0.68);
+        tempClinicImages.push(compressed);
+      }
+      e.target.value = "";
+      renderSettingsMediaPreviews();
+    };
+
+    function renderSettingsMediaPreviews() {
+      const logoBox = document.getElementById("logoPreviewContainer");
+      logoBox.innerHTML = tempLogoData ? `
+        <div class="preview-item">
+          <img src="${tempLogoData}" alt="logo" />
+          <button type="button" class="preview-remove" onclick="removeClinicLogo()">✕</button>
+        </div>
+      ` : "";
+
+      const photosBox = document.getElementById("clinicPhotosPreviewContainer");
+      photosBox.innerHTML = "";
+      tempClinicImages.forEach((src, idx) => {
+        const div = document.createElement("div");
+        div.className = "preview-item";
+        div.innerHTML = `
+          <img src="${src}" alt="clinic" />
+          <button type="button" class="preview-remove" onclick="removeClinicPhoto(${idx})">✕</button>
+        `;
+        photosBox.appendChild(div);
+      });
+    }
+
+    window.removeClinicLogo = function() {
+      tempLogoData = "";
+      renderSettingsMediaPreviews();
+    };
+
+    window.removeClinicPhoto = function(idx) {
+      tempClinicImages.splice(idx, 1);
+      renderSettingsMediaPreviews();
+    };
+
+    window.saveClinicSettings = async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById("saveSettingsBtn");
+      btn.disabled = true;
+      btn.textContent = "جاري حفظ الإعدادات...";
+
+      const servicesArr = document.getElementById("setServicesText").value
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      const rulesArr = document.getElementById("setRulesText").value
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      const updatedSettings = {
+        clinicName: document.getElementById("setClinicName").value.trim(),
+        doctorSpecialty: document.getElementById("setSpecialty").value.trim(),
+        consultationFee: document.getElementById("setFee").value.trim(),
+        whatsappPhone: document.getElementById("setWhatsappPhone").value.trim(),
+        countryCode: document.getElementById("setCountryCode").value.trim(),
+        workingHours: document.getElementById("setWorkingHours").value.trim(),
+        activeQueueLabel: document.getElementById("setQueueLabel").value.trim(),
+        mapUrl: document.getElementById("setMapUrl").value.trim(),
+        description: document.getElementById("setDescription").value.trim(),
+        logoData: tempLogoData,
+        clinicImages: tempClinicImages,
+        services: servicesArr,
+        rules: rulesArr,
+        updatedAt: Date.now()
+      };
+
+      try {
+        await setDoc(doc(db, "clinicSettings", "info"), updatedSettings, { merge: true });
+        alert("تم حفظ إعدادات العيادة وتحديث الموقع الأساسي بنجاح!");
+      } catch (err) {
+        console.error(err);
+        alert("حدث خطأ أثناء حفظ الإعدادات.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "حفظ جميع إعدادات العيادة";
+      }
+    };
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
